@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import { BehaviorSubject, combineLatest, map, Observable, switchMap } from "rxjs";
 
 import { HttpClient } from "@angular/common/http";
 
@@ -9,30 +9,25 @@ export class WeatherService {
   static APPID = "5a4b2d457ecbef9eb2a71e480b947604";
   static ICON_URL =
     "https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-hdpi/";
-  private currentConditions = [];
+  private locations$ = new BehaviorSubject<Zipcode[]>([]);
 
   constructor(private http: HttpClient) {}
 
-  addCurrentConditions(zipcode: string): void {
+  setLocations(locations: Zipcode[]): void  {
+    this.locations$.next(locations);
+  }
+
+  private getCurrentCondition(zipcode: string): Observable<WeatherCondition> {
     // Here we make a request to get the curretn conditions data from the API. Note the use of backticks and an expression to insert the zipcode
-    this.http.get(
+    return this.http.get<ApiWeatherCondition>(
       `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`,
-    )
-      .subscribe((data) =>
-        this.currentConditions.push({ zip: zipcode, data: data })
-      );
+    ).pipe(map(data => ({ zip: zipcode, data: data })))
   }
 
-  removeCurrentConditions(zipcode: string) {
-    for (let i in this.currentConditions) {
-      if (this.currentConditions[i].zip == zipcode) {
-        this.currentConditions.splice(+i, 1);
-      }
-    }
-  }
-
-  getCurrentConditions(): any[] {
-    return this.currentConditions;
+  getCurrentConditions(): Observable<WeatherCondition[]> {
+    return this.locations$.pipe(
+      switchMap(locations => combineLatest(locations.map(loc => this.getCurrentCondition(loc)))),
+    );
   }
 
   getForecast(zipcode: string): Observable<any> {
@@ -59,4 +54,48 @@ export class WeatherService {
       return WeatherService.ICON_URL + "art_clear.png";
     }
   }
+}
+
+type Zipcode = string;
+
+interface WeatherCondition {
+  zip: string;
+  data: ApiWeatherCondition;
+}
+interface ApiWeatherCondition {
+  coord: { lon: number; lat: number };
+  weather: [
+    {
+      id: number;
+      main: string;
+      description: string;
+      icon: string;
+    },
+  ];
+  base: string;
+  main: {
+    temp: number;
+    feels_like: number;
+    temp_min: number;
+    temp_max: number;
+    pressure: number;
+    humidity: number;
+  };
+  visibility: number;
+  wind: { speed: number; deg: number; gust: number };
+  rain?: { "1h": number };
+  snow?: { "1h": number };
+  clouds?: { all: number };
+  dt: number;
+  sys: {
+    type: number;
+    id: number;
+    country: string;
+    sunrise: number;
+    sunset: number;
+  };
+  timezone: number;
+  id: number;
+  name: string;
+  cod: number;
 }

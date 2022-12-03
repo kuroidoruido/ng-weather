@@ -8,11 +8,8 @@ import { Router } from "@angular/router";
   styleUrls: ["./current-conditions.component.css"],
 })
 export class CurrentConditionsComponent {
+  currentConditions$ = this.weatherService.getCurrentConditions();
   constructor(private weatherService: WeatherService, private router: Router) {
-  }
-
-  getCurrentConditions() {
-    return this.weatherService.getCurrentConditions();
   }
 
   showForecast(zipcode: string) {
