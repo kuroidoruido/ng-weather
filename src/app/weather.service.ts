@@ -1,10 +1,12 @@
 import { Injectable } from "@angular/core";
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   first,
   map,
   Observable,
+  of,
   repeat,
   switchMap,
 } from "rxjs";
@@ -31,7 +33,10 @@ export class WeatherService {
       .get<ApiWeatherCondition>(
         `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
       )
-      .pipe(map((data) => ({ zip: zipcode, data: data })));
+      .pipe(
+        map((data) => ({ zip: zipcode, data: data })),
+        catchError((error) => of({ zip: zipcode, error: error }))
+      );
   }
 
   getCurrentConditions(
@@ -76,7 +81,8 @@ type Zipcode = string;
 
 interface WeatherCondition {
   zip: string;
-  data: ApiWeatherCondition;
+  data?: ApiWeatherCondition;
+  error?: any;
 }
 interface ApiWeatherCondition {
   coord: { lon: number; lat: number };
