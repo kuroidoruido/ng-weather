@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { isNotDefinedOrEmpty } from "./utils/fp";
 import { WeatherService } from "./weather.service";
 
 export const LOCATIONS: string = "locations";
@@ -16,6 +17,9 @@ export class LocationService {
   }
 
   addLocation(zipcode: string) {
+    if (isNotDefinedOrEmpty(zipcode)) {
+      return;
+    }
     this.locations.push(zipcode);
     localStorage.setItem(LOCATIONS, JSON.stringify(this.locations));
     this.weatherService.setLocations(this.locations);
