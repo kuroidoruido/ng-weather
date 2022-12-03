@@ -1,5 +1,13 @@
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, combineLatest, map, Observable, switchMap } from "rxjs";
+import {
+  BehaviorSubject,
+  combineLatest,
+  first,
+  map,
+  Observable,
+  repeat,
+  switchMap,
+} from "rxjs";
 
 import { HttpClient } from "@angular/common/http";
 
@@ -13,27 +21,35 @@ export class WeatherService {
 
   constructor(private http: HttpClient) {}
 
-  setLocations(locations: Zipcode[]): void  {
+  setLocations(locations: Zipcode[]): void {
     this.locations$.next(locations);
   }
 
   private getCurrentCondition(zipcode: string): Observable<WeatherCondition> {
     // Here we make a request to get the curretn conditions data from the API. Note the use of backticks and an expression to insert the zipcode
-    return this.http.get<ApiWeatherCondition>(
-      `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`,
-    ).pipe(map(data => ({ zip: zipcode, data: data })))
+    return this.http
+      .get<ApiWeatherCondition>(
+        `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
+      )
+      .pipe(map((data) => ({ zip: zipcode, data: data })));
   }
 
-  getCurrentConditions(): Observable<WeatherCondition[]> {
+  getCurrentConditions(
+    autoRefreshDelayInMillis = 30_000
+  ): Observable<WeatherCondition[]> {
     return this.locations$.pipe(
-      switchMap(locations => combineLatest(locations.map(loc => this.getCurrentCondition(loc)))),
+      switchMap((locations) =>
+        combineLatest(
+          locations.map((loc) => this.getCurrentCondition(loc))
+        ).pipe(first(), repeat({ delay: autoRefreshDelayInMillis }))
+      )
     );
   }
 
   getForecast(zipcode: string): Observable<any> {
     // Here we make a request to get the forecast data from the API. Note the use of backticks and an expression to insert the zipcode
     return this.http.get(
-      `${WeatherService.URL}/forecast/daily?zip=${zipcode},us&units=imperial&cnt=5&APPID=${WeatherService.APPID}`,
+      `${WeatherService.URL}/forecast/daily?zip=${zipcode},us&units=imperial&cnt=5&APPID=${WeatherService.APPID}`
     );
   }
 
@@ -70,7 +86,7 @@ interface ApiWeatherCondition {
       main: string;
       description: string;
       icon: string;
-    },
+    }
   ];
   base: string;
   main: {
