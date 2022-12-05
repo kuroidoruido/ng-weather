@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { throwError } from "rxjs";
 import { isNotDefinedOrEmpty } from "./utils/fp";
 import { WeatherService } from "./weather.service";
 
@@ -18,11 +19,11 @@ export class LocationService {
 
   addLocation(zipcode: string) {
     if (isNotDefinedOrEmpty(zipcode)) {
-      return;
+      return throwError(() => "Empty zipcode");
     }
     this.locations.push(zipcode);
     localStorage.setItem(LOCATIONS, JSON.stringify(this.locations));
-    this.weatherService.setLocations(this.locations);
+    return this.weatherService.setLocations(this.locations);
   }
 
   removeLocation(zipcode: string) {

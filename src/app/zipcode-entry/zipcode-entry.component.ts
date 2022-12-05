@@ -1,4 +1,5 @@
 import { Component } from "@angular/core";
+import { ThreeStateButtonState } from "app/ui/three-state-button/three-state-button.directive";
 import { LocationService } from "../location.service";
 
 @Component({
@@ -6,9 +7,20 @@ import { LocationService } from "../location.service";
   templateUrl: "./zipcode-entry.component.html",
 })
 export class ZipcodeEntryComponent {
+  buttonState: ThreeStateButtonState = "IDLE";
+
   constructor(private service: LocationService) {}
 
   addLocation(zipcode: string) {
-    this.service.addLocation(zipcode);
+    this.buttonState = "WORKING";
+    this.service.addLocation(zipcode).subscribe({
+      error: (error) => {
+        console.error(error);
+        this.buttonState = "DONE";
+      },
+      complete: () => {
+        this.buttonState = "DONE";
+      },
+    });
   }
 }

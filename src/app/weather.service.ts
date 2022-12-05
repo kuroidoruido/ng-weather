@@ -3,11 +3,13 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  filter,
   first,
   map,
   Observable,
   of,
   repeat,
+  share,
   switchMap,
 } from "rxjs";
 
@@ -23,8 +25,12 @@ export class WeatherService {
 
   constructor(private http: HttpClient) {}
 
-  setLocations(locations: Zipcode[]): void {
+  setLocations(locations: Zipcode[]): Observable<WeatherCondition[]> {
     this.locations$.next(locations);
+    return this.getCurrentConditions().pipe(
+      filter((conditions) => conditions.length === locations.length),
+      first()
+    );
   }
 
   private getCurrentCondition(zipcode: string): Observable<WeatherCondition> {
@@ -46,7 +52,7 @@ export class WeatherService {
       switchMap((locations) =>
         combineLatest(
           locations.map((loc) => this.getCurrentCondition(loc))
-        ).pipe(first(), repeat({ delay: autoRefreshDelayInMillis }))
+        ).pipe(first(), repeat({ delay: autoRefreshDelayInMillis }), share())
       )
     );
   }
@@ -79,11 +85,12 @@ export class WeatherService {
 
 type Zipcode = string;
 
-interface WeatherCondition {
+export interface WeatherCondition {
   zip: string;
   data?: ApiWeatherCondition;
   error?: any;
 }
+
 interface ApiWeatherCondition {
   coord: { lon: number; lat: number };
   weather: [

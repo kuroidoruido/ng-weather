@@ -1,8 +1,24 @@
 <div class="well">
   <h2>Enter a zipcode:</h2>
-  <input type="text" #zipcode placeholder="Zipcode" class="form-control">
-  <br>
-  <button class="btn btn-primary" (click)="addLocation(zipcode.value)" >
-    Add location
+  <input type="text" #zipcode placeholder="Zipcode" class="form-control" />
+  <br />
+  <button
+    appThreeStateButton
+    class="btn"
+    [(state)]="buttonState"
+    [resetAfter]="500"
+    (click)="addLocation(zipcode.value)"
+    [ngClass]="{
+      'btn-primary': buttonState === 'IDLE',
+      'btn-info': buttonState === 'WORKING',
+      'btn-success': buttonState === 'DONE'
+    }"
+  >
+    <ng-template appThreeStateButtonIdle> Add location </ng-template>
+    <ng-template appThreeStateButtonWorking> Adding... </ng-template>
+    <ng-template appThreeStateButtonDone>
+      <span class="glyphicon glyphicon-saved" aria-hidden="true"></span>
+      DONE
+    </ng-template>
   </button>
 </div>

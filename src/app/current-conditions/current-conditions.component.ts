@@ -10,6 +10,7 @@ import { LocationService } from "app/location.service";
 })
 export class CurrentConditionsComponent {
   currentConditions$ = this.weatherService.getCurrentConditions();
+
   constructor(
     private weatherService: WeatherService,
     private locationService: LocationService,
