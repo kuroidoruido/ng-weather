@@ -1,0 +1,41 @@
+name: Deploy to GitHub Pages
+
+on: [push]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Manage npm modules cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
+
+      - name: Install dependancies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload built output as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: virtual-rpg-character-sheet-master
+          path: dist/
+
+      - name: Deploy on Github Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run ng -- deploy --base-href=/ng-weather/ --name="Anthony Pena" --email="anthony.pena@outlook.fr" --no-silent

@@ -39,6 +39,7 @@
     "@types/country-data": "^0.0.2",
     "@types/jasmine": "~3.6.11",
     "@types/node": "^18.11.10",
+    "angular-cli-ghpages": "^1.0.5",
     "blue-harvest": "^0.2.1",
     "jasmine": "~2.6.0",
     "jasmine-core": "~4.5.0",
