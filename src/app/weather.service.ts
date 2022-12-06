@@ -4,13 +4,13 @@ import {
   catchError,
   combineLatest,
   filter,
-  first,
   map,
   Observable,
   of,
   repeat,
   share,
   switchMap,
+  take,
 } from "rxjs";
 
 import { HttpClient } from "@angular/common/http";
@@ -29,7 +29,7 @@ export class WeatherService {
     this.locations$.next(locations);
     return this.getCurrentConditions().pipe(
       filter((conditions) => conditions.length === locations.length),
-      first()
+      take(1)
     );
   }
 
@@ -52,9 +52,15 @@ export class WeatherService {
   ): Observable<WeatherCondition[]> {
     return this.locations$.pipe(
       switchMap((locations) =>
-        combineLatest(
-          locations.map((loc) => this.getCurrentCondition(loc))
-        ).pipe(first(), repeat({ delay: autoRefreshDelayInMillis }), share())
+        locations.length > 0
+          ? combineLatest(
+              locations.map((loc) => this.getCurrentCondition(loc))
+            ).pipe(
+              take(1),
+              repeat({ delay: autoRefreshDelayInMillis }),
+              share()
+            )
+          : of([])
       )
     );
   }
