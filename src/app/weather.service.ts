@@ -21,11 +21,11 @@ export class WeatherService {
   static APPID = "5a4b2d457ecbef9eb2a71e480b947604";
   static ICON_URL =
     "https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-hdpi/";
-  private locations$ = new BehaviorSubject<Zipcode[]>([]);
+  private locations$ = new BehaviorSubject<Location[]>([]);
 
   constructor(private http: HttpClient) {}
 
-  setLocations(locations: Zipcode[]): Observable<WeatherCondition[]> {
+  setLocations(locations: Location[]): Observable<WeatherCondition[]> {
     this.locations$.next(locations);
     return this.getCurrentConditions().pipe(
       filter((conditions) => conditions.length === locations.length),
@@ -33,15 +33,17 @@ export class WeatherService {
     );
   }
 
-  private getCurrentCondition(zipcode: string): Observable<WeatherCondition> {
+  private getCurrentCondition(
+    location: Location
+  ): Observable<WeatherCondition> {
     // Here we make a request to get the curretn conditions data from the API. Note the use of backticks and an expression to insert the zipcode
     return this.http
       .get<ApiWeatherCondition>(
-        `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
+        `${WeatherService.URL}/weather?zip=${location.zipcode},${location.country}&units=imperial&APPID=${WeatherService.APPID}`
       )
       .pipe(
-        map((data) => ({ zip: zipcode, data: data })),
-        catchError((error) => of({ zip: zipcode, error: error }))
+        map((data) => ({ location, data: data })),
+        catchError((error) => of({ location, error: error }))
       );
   }
 
@@ -57,10 +59,10 @@ export class WeatherService {
     );
   }
 
-  getForecast(zipcode: string): Observable<any> {
+  getForecast(location: Location): Observable<any> {
     // Here we make a request to get the forecast data from the API. Note the use of backticks and an expression to insert the zipcode
     return this.http.get(
-      `${WeatherService.URL}/forecast/daily?zip=${zipcode},us&units=imperial&cnt=5&APPID=${WeatherService.APPID}`
+      `${WeatherService.URL}/forecast/daily?zip=${location.zipcode},${location.country}&units=imperial&cnt=5&APPID=${WeatherService.APPID}`
     );
   }
 
@@ -83,10 +85,13 @@ export class WeatherService {
   }
 }
 
-type Zipcode = string;
+export interface Location {
+  zipcode: string;
+  country: string;
+}
 
 export interface WeatherCondition {
-  zip: string;
+  location: Location;
   data?: ApiWeatherCondition;
   error?: any;
 }

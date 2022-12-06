@@ -9,11 +9,11 @@ const appRoutes: Routes = [
     component: MainPageComponent,
   },
   {
-    path: "forecast/:zipcode",
+    path: "forecast/:location",
     component: ForecastsListComponent,
   },
 ];
 export const routing: ModuleWithProviders<any> = RouterModule.forRoot(
   appRoutes,
-  { relativeLinkResolution: "legacy" },
+  { relativeLinkResolution: "legacy" }
 );

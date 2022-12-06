@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
-import { WeatherService } from "../weather.service";
 import { Router } from "@angular/router";
+import { Location, WeatherService } from "../weather.service";
 import { LocationService } from "app/location.service";
 
 @Component({
@@ -17,12 +17,15 @@ export class CurrentConditionsComponent {
     private router: Router
   ) {}
 
-  showForecast(zipcode: string) {
-    this.router.navigate(["/forecast", zipcode]);
+  showForecast(location: Location) {
+    this.router.navigate([
+      "/forecast",
+      `${location.zipcode},${location.country}`,
+    ]);
   }
 
-  removeLocation(event: MouseEvent, zipcode: string) {
+  removeLocation(event: MouseEvent, location: Location) {
     event.stopPropagation();
-    this.locationService.removeLocation(zipcode);
+    this.locationService.removeLocation(location);
   }
 }

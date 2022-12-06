@@ -2,11 +2,11 @@
   <div
     *ngFor="let location of currentConditions$ | async"
     class="well flex"
-    (click)="showForecast(location.zip)"
+    (click)="showForecast(location.location)"
   >
     <ng-template [ngIf]="location.data" [ngIfElse]="errorTemplate">
       <div>
-        <h3>{{ location.data.name }} ({{ location.zip }})</h3>
+        <h3>{{ location.data.name }} ({{ location.location.zipcode }})</h3>
         <h4>Current conditions: {{ location.data.weather[0].main }}</h4>
         <h4>Temperatures today:</h4>
         <p>
@@ -15,13 +15,17 @@
           {{ location.data.main.temp_min | number : ".0-0" }}
         </p>
         <p>
-          <a [routerLink]="['/forecast', location.zip]"
+          <a
+            [routerLink]="[
+              '/forecast',
+              location.location.zipcode + ',' + location.location.country
+            ]"
             >Show 5-day forecast for {{ location.data.name }}</a
           >
         </p>
       </div>
       <div>
-        <span class="close" (click)="removeLocation($event, location.zip)"
+        <span class="close" (click)="removeLocation($event, location.location)"
           >&times;</span
         >
         <img
@@ -32,12 +36,12 @@
     <ng-template #errorTemplate>
       <div>
         <p>
-          We cannot get weather for zipcode {{ location.zip }}... Can you check
-          this is a valid zipcode?
+          We cannot get weather for zipcode {{ location.location.zipcode }}...
+          Can you check this is a valid zipcode?
         </p>
       </div>
       <div>
-        <span class="close" (click)="removeLocation($event, location.zip)"
+        <span class="close" (click)="removeLocation($event, location.location)"
           >&times;</span
         >
       </div>

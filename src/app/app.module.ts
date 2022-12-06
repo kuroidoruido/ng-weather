@@ -15,6 +15,7 @@ import { HttpClientModule } from "@angular/common/http";
 import { ServiceWorkerModule } from "@angular/service-worker";
 import { environment } from "../environments/environment";
 import { ThreeStateButtonModule } from "./ui/three-state-button";
+import { InputAutocompleteComponent } from "./ui/input-autocomplete";
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { ThreeStateButtonModule } from "./ui/three-state-button";
       enabled: environment.production,
     }),
     ThreeStateButtonModule,
+    InputAutocompleteComponent,
   ],
   providers: [LocationService, WeatherService],
   bootstrap: [AppComponent],

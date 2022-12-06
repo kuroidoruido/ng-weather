@@ -1,0 +1,29 @@
+<div class="dropdown">
+  <input
+    type="text"
+    [id]="'dropdownMenu' + uniqueId"
+    class="dropdown-toggle form-control"
+    [placeholder]="placeholder"
+    data-toggle="dropdown"
+    aria-haspopup="true"
+    [attr.aria-expanded]="isExpanded"
+    (click)="isExpanded = !isExpanded"
+    [value]="filter"
+    (keyup)="filter = $event.target.value"
+  />
+  <ul
+    class="dropdown-menu"
+    [class.show]="isExpanded"
+    [attr.aria-labelledby]="'dropdownMenu' + uniqueId"
+  >
+    <ng-container *ngIf="filteredItems$ | async as filteredItems">
+      <li *ngFor="let item of filteredItems">
+        <a
+          href="#"
+          [innerHTML]="item._formattedLabel"
+          (click)="selectItem(item)"
+        ></a>
+      </li>
+    </ng-container>
+  </ul>
+</div>

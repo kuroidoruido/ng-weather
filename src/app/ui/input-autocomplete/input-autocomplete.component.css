@@ -1,0 +1,10 @@
+:host {
+    display: block;
+    width: 100%;
+}
+.dropdown {
+    width: 100%;
+}
+.dropdown .dropdown-menu {
+    width: 100%;
+}

@@ -1,13 +1,32 @@
 <div class="well">
   <h2>Enter a zipcode:</h2>
-  <input type="text" #zipcode placeholder="Zipcode" class="form-control" />
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 col-xs-12">
+        <input
+          type="text"
+          placeholder="Zipcode"
+          class="form-control"
+          (change)="zipcode = $event.target.value"
+        />
+      </div>
+      <div class="col-md-6 col-xs-12">
+        <app-input-autocomplete
+          [items]="allCountries"
+          [maxItemCountShown]="6"
+          placeholder="Enter country name"
+          (selected)="country = $event"
+        ></app-input-autocomplete>
+      </div>
+    </div>
+  </div>
   <br />
   <button
     appThreeStateButton
     class="btn"
     [(state)]="buttonState"
     [resetAfter]="500"
-    (click)="addLocation(zipcode.value)"
+    (click)="addLocation()"
     [ngClass]="{
       'btn-primary': buttonState === 'IDLE',
       'btn-info': buttonState === 'WORKING',

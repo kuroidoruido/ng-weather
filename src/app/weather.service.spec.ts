@@ -22,13 +22,13 @@ describe(WeatherService.name, () => {
     });
 
     it("should make no request while no one subscribe to getCurrentConditions()", () => {
-      const zipcode = "00501";
+      const locations = [{ zipcode: "00501", country: "us" }];
       const weatherService = TestBed.inject(WeatherService);
       const httpTestingController = TestBed.inject(HttpTestingController);
-      weatherService.setLocations([zipcode]);
+      weatherService.setLocations(locations);
 
       httpTestingController.expectNone(
-        `${WeatherService.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${WeatherService.APPID}`
+        `${WeatherService.URL}/weather?zip=${locations[0].zipcode},${locations[0].country}&units=imperial&APPID=${WeatherService.APPID}`
       );
       httpTestingController.verify();
       // avoid jasmine warning
@@ -36,19 +36,19 @@ describe(WeatherService.name, () => {
     });
 
     it("should make one request for one location", () => {
-      const zipcodes = ["00501"];
+      const locations = [{ zipcode: "00501", country: "us" }];
       const weatherService = TestBed.inject(WeatherService);
       const httpTestingController = TestBed.inject(HttpTestingController);
-      weatherService.setLocations(zipcodes);
+      weatherService.setLocations(locations);
 
       weatherService.getCurrentConditions().subscribe((conditions) => {
         expect(conditions).toEqual([
-          { zip: zipcodes[0], data: { name: "Holtsville" } as any },
+          { location: locations[0], data: { name: "Holtsville" } as any },
         ]);
       });
 
       const req = httpTestingController.expectOne(
-        `${WeatherService.URL}/weather?zip=${zipcodes[0]},us&units=imperial&APPID=${WeatherService.APPID}`
+        `${WeatherService.URL}/weather?zip=${locations[0].zipcode},${locations[0].country}&units=imperial&APPID=${WeatherService.APPID}`
       );
 
       req.flush({ name: "Holtsville" });
@@ -56,34 +56,37 @@ describe(WeatherService.name, () => {
     });
 
     it("should make one request by location", () => {
-      const zipcodes = ["00501", "94112"];
+      const locations = [
+        { zipcode: "00501", country: "us" },
+        { zipcode: "2024", country: "au" },
+      ];
       const weatherService = TestBed.inject(WeatherService);
       const httpTestingController = TestBed.inject(HttpTestingController);
-      weatherService.setLocations(zipcodes);
+      weatherService.setLocations(locations);
 
       weatherService.getCurrentConditions().subscribe((conditions) => {
         expect(conditions).toEqual([
-          { zip: zipcodes[0], data: { name: "Holtsville" } as any },
-          { zip: zipcodes[1], data: { name: "San Francisco" } as any },
+          { location: locations[0], data: { name: "Holtsville" } as any },
+          { location: locations[1], data: { name: "Waverley" } as any },
         ]);
       });
 
       const req1 = httpTestingController.expectOne(
-        `${WeatherService.URL}/weather?zip=${zipcodes[0]},us&units=imperial&APPID=${WeatherService.APPID}`
+        `${WeatherService.URL}/weather?zip=${locations[0].zipcode},${locations[0].country}&units=imperial&APPID=${WeatherService.APPID}`
       );
       req1.flush({ name: "Holtsville" });
 
       const req2 = httpTestingController.expectOne(
-        `${WeatherService.URL}/weather?zip=${zipcodes[1]},us&units=imperial&APPID=${WeatherService.APPID}`
+        `${WeatherService.URL}/weather?zip=${locations[1].zipcode},${locations[1].country}&units=imperial&APPID=${WeatherService.APPID}`
       );
-      req2.flush({ name: "San Francisco" });
+      req2.flush({ name: "Waverley" });
 
       httpTestingController.verify();
     });
 
     it("should emit updated data every 30s until unsubscribe", () => {
       const testScheduler = createTestScheduler();
-      const zipcodes = ["00501"];
+      const locations = [{ zipcode: "00501", country: "us" }];
       const HttpClientMock = {
         get: jasmine
           .createSpy("get")
@@ -92,14 +95,14 @@ describe(WeatherService.name, () => {
       const weatherService = TestBed.overrideProvider(HttpClient, {
         useValue: HttpClientMock,
       }).inject(WeatherService);
-      weatherService.setLocations(zipcodes);
+      weatherService.setLocations(locations);
 
       testScheduler.run(({ expectObservable }) => {
         const currentConditions$ = weatherService.getCurrentConditions(2_001);
         const sub = "     6s !";
         const expected = "a 2s a 2s a";
         expectObservable(currentConditions$, sub).toBe(expected, {
-          a: [{ zip: zipcodes[0], data: { name: "Holtsville" } }],
+          a: [{ location: locations[0], data: { name: "Holtsville" } }],
         });
         setTimeout(() => {
           expect(HttpClientMock.get).toHaveBeenCalledTimes(3);
